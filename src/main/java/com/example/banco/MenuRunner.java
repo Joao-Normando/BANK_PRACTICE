@@ -20,7 +20,7 @@ public class MenuRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("Welcome to the Spring Boot CLI Bank! (Java 17)");
+        System.out.println("Spring Boot Project Bank! (in Java 17)");
 
 
         var running = true;

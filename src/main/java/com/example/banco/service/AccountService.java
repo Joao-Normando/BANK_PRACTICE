@@ -62,10 +62,8 @@ public class AccountService {
     }
 
     public void payBill(BigDecimal amount) {
-        // Paying a bill is functionally identical to a withdrawal
         this.withdraw(amount);
     }
-
 
     public boolean isUsingOverdraft() {
         return this.balance.compareTo(BigDecimal.ZERO) < 0;

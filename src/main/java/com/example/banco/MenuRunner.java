@@ -1,6 +1,6 @@
 package com.example.banco;
 
-import com.example.banco.service.ContaService;
+import com.example.banco.service.AccountService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -10,124 +10,125 @@ import java.util.Scanner;
 @Component
 public class MenuRunner implements CommandLineRunner {
 
-    private final ContaService contaService;
+    private final AccountService accountService;
     private final Scanner scanner;
 
-    public MenuRunner(ContaService contaService) {
-        this.contaService = contaService;
+    public MenuRunner(AccountService accountService) {
+        this.accountService = accountService;
         this.scanner = new Scanner(System.in);
     }
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println("Bem-vindo ao Banco Spring Boot CLI! (Java 17)");
+        System.out.println("Welcome to the Spring Boot CLI Bank! (Java 17)");
 
 
         var running = true;
         while (running) {
-            exibirMenu();
+            displayMenu();
             try {
 
                 var input = scanner.nextLine();
 
 
                 if (input.isBlank()) {
-                    System.out.println("Por favor, digite uma opção.");
+                    System.out.println("Please enter an option.");
                     continue;
                 }
 
-                var opcao = Integer.parseInt(input);
+                var option = Integer.parseInt(input);
 
-                switch (opcao) {
-                    case 1: consultarSaldo(); break;
-                    case 2: consultarChequeEspecial(); break;
-                    case 3: depositar(); break;
-                    case 4: sacar(); break;
-                    case 5: pagarBoleto(); break;
-                    case 6: verificarUsoChequeEspecial(); break;
+                switch (option) {
+                    case 1: checkBalance(); break;
+                    case 2: checkOverdraft(); break;
+                    case 3: deposit(); break;
+                    case 4: withdraw(); break;
+                    case 5: payBill(); break;
+                    case 6: checkIfUsingOverdraft(); break;
                     case 0:
                         running = false;
-                        System.out.println("Obrigado por usar nossos serviços. Finalizando...");
+                        System.out.println("Thank you for using our services. Exiting...");
                         break;
                     default:
-                        System.out.println("Opção inválida. Tente novamente.");
+                        System.out.println("Invalid option. Try again.");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Erro: Por favor, digite um número válido para a opção.");
+                System.out.println("Error: Please enter a valid number for the option.");
             } catch (Exception e) {
-                System.out.println("Erro na operação: " + e.getMessage());
+                System.out.println("Operation Error: " + e.getMessage());
             }
             System.out.println("---------------------------------");
         }
         scanner.close();
     }
 
-    private void exibirMenu() {
-        System.out.println("\n*** Menu Principal ***");
-        System.out.println("1. Consultar Saldo");
-        System.out.println("2. Consultar Cheque Especial (Limite e Uso)");
-        System.out.println("3. Depositar Dinheiro");
-        System.out.println("4. Sacar Dinheiro");
-        System.out.println("5. Pagar um Boleto");
-        System.out.println("6. Verificar se está usando Cheque Especial");
-        System.out.println("0. Sair");
-        System.out.print("Escolha uma opção: ");
+    private void displayMenu() {
+        System.out.println("\n*** Main Menu ***");
+        System.out.println("1. Check Balance");
+        System.out.println("2. Check Overdraft (Limit and Usage)");
+        System.out.println("3. Deposit Money");
+        System.out.println("4. Withdraw Money");
+        System.out.println("5. Pay a Bill");
+        System.out.println("6. Check if Using Overdraft");
+        System.out.println("0. Exit");
+        System.out.print("Choose an option: ");
     }
 
-    // --- Métodos de Operação ---
+    // --- Operation Methods ---
 
-    private void consultarSaldo() {
-        var saldo = contaService.consultarSaldo();
-        System.out.printf("Seu saldo atual é: R$ %.2f\n", saldo);
+    private void checkBalance() {
+        var balance = accountService.checkBalance();
+        System.out.printf("Your current balance is: R$ %.2f\n", balance);
     }
 
-    private void consultarChequeEspecial() {
-        var info = contaService.consultarChequeEspecialInfo();
+    private void checkOverdraft() {
+        var info = accountService.getOverdraftInfo();
         System.out.println(info);
     }
 
-    private void verificarUsoChequeEspecial() {
-        if (contaService.isUsandoChequeEspecial()) {
-            System.out.println("Sim, você está atualmente usando o cheque especial.");
+    private void checkIfUsingOverdraft() {
+        if (accountService.isUsingOverdraft()) {
+            System.out.println("Yes, you are currently using your overdraft.");
         } else {
-            System.out.println("Não, você não está usando o cheque especial.");
+            System.out.println("No, you are not using your overdraft.");
         }
     }
 
-    // --- Métodos que pedem input ---
+    // --- Input Methods ---
 
-    private BigDecimal lerValor(String prompt) {
+    private BigDecimal readValue(String prompt) {
         while(true) {
             try {
                 System.out.print(prompt);
-                var valorStr = scanner.nextLine();
-                valorStr = valorStr.replace(',', '.');
+                var valueStr = scanner.nextLine();
+                valueStr = valueStr.replace(',', '.');
 
-                return new BigDecimal(valorStr);
+                return new BigDecimal(valueStr);
             } catch (NumberFormatException e) {
-                System.out.println("Valor inválido. Use o formato 50.00 ou 50,00.");
+                System.out.println("Invalid value. Use format 50.00 or 50,00.");
             }
         }
     }
 
-    private void depositar() {
-        var valor = lerValor("Digite o valor a depositar (ex: 50.00): ");
-        contaService.depositar(valor);
-        System.out.println("Depósito realizado com sucesso.");
-        consultarSaldo(); // Mostra o novo saldo
+    private void deposit() {
+        var amount = readValue("Enter the amount to deposit (e.g., 50.00): ");
+        accountService.deposit(amount);
+        System.out.println("Deposit successful.");
+        checkBalance(); // Mostra o novo saldo
     }
 
-    private void sacar() {
-        var valor = lerValor("Digite o valor a sacar (ex: 100.00): ");
-        contaService.sacar(valor);
-        System.out.println("Saque realizado com sucesso.");
-        consultarSaldo();
+    private void withdraw() {
+        var amount = readValue("Enter the amount to withdraw (e.g., 100.00): ");
+        accountService.withdraw(amount);
+        System.out.println("Withdrawal successful.");
+        checkBalance();
     }
 
-    private void pagarBoleto() {
-        var valor = lerValor("Digite o valor do boleto (ex: 75.50): ");
-        contaService.pagarBoleto(valor);
-        System.out.println("Boleto pago com sucesso.");
-        consultarSaldo();
+    private void payBill() {
+        var amount = readValue("Enter the bill amount (e.g., 75.50): ");
+        accountService.payBill(amount);
+        System.out.println("Bill paid successfully.");
+        checkBalance();
     }
 }
+
